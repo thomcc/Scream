@@ -17,7 +17,6 @@ class TestLexer < Test::Unit::TestCase
   def test_quotes
     t1 = "'a b 'cd e f"
     t2 = "`(a ,b ,@(c d e))"
-    t3, t4, t5, t6 = "`", "'", ",", ",@"
     assert_equal ["'", "a", "b", "'", "cd", "e", "f"], lex(t1)
     assert_equal %w{` ( a , b ,@ ( c d e ) )}, lex(t2)
     %w(` ' , ,@).each do |q|

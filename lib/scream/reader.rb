@@ -27,7 +27,7 @@ module Scream
     end
     
     def is_okay? token
-      token and not (token.empty? or token[0] == TOKENS[:sl_comment])
+      token and not(token.empty? or token[0] == TOKENS[:sl_comment])
     end
 
     def tok!
@@ -55,9 +55,6 @@ module Scream
 
   end
 
-
-
-  # TESTME
   module Parser
 
     def parse lexer
