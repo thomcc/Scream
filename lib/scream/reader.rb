@@ -7,8 +7,8 @@ module Scream
     true: "#t",
     false: "#f",
     sl_comment: ";",
-    rp: "(",
-    lp: ")",
+    rp: ")",
+    lp: "(",
     str_delim: '"',
     str_delim_esc: '\"'
   }
@@ -26,22 +26,19 @@ module Scream
       m_data[1, 2] if m_data
     end
     
-    def okay? token
+    def is_okay? token
       token and not (token.empty? or token[0] == TOKENS[:sl_comment])
     end
 
     def tok!
       
-      loop do
+      begin
         @line = @port.gets if @line.empty?
-
         return EOF_OBJECT if @line.nil?
-
         token, @line = match_next @line
+      end until is_okay? token
 
-        return token if okay? token
-      end
-
+      token
     end
 
     include Enumerable
@@ -61,7 +58,7 @@ module Scream
 
 
   # TESTME
-  class Parser
+  module Parser
 
     def parse lexer
       tok = lexer.tok!
@@ -69,7 +66,7 @@ module Scream
     end
 
     def read io
-      parse Lexer.new io
+      parse Lexer.new(io)
     end
 
     def atom token
@@ -77,8 +74,8 @@ module Scream
         true
       elsif token == TOKENS[:false]  
         false
-      elsif token[0] == str_delim 
-        token[1..-2].gsub str_delim_esc, str_delim
+      elsif token[0] == TOKENS[:str_delim]
+        token[1..-2].gsub TOKENS[:str_delim_esc], TOKENS[:str_delim]
       else 
         Integer token rescue Float token rescue token.to_sym
       end
@@ -89,22 +86,21 @@ module Scream
     def parsify lexer, token
       if token == TOKENS[:lp]
         l = []
-        until token == TOKENS[:rp]
-          token = lexer.tok!
+        until (token = lexer.tok!) == TOKENS[:rp]
           l << parsify(lexer, token)
         end
-      elsif token == TOKENS[:lp]
-        raise ScreamSyntaxError, "unexpected lparen"
+        l
+      elsif token == TOKENS[:rp]
+        raise Scream::SyntaxError, "unexpected rparen"
       elsif QUOTES[token]
         [QUOTES[token], parse(lexer)]
       elsif token == EOF_OBJECT
-        raise ScreamSyntaxError, "unexpected EOF"
+        raise Scream::SyntaxError, "unexpected EOF"
       else
         atom token
       end
     end
 
   end
-
 
 end
