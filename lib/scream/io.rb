@@ -3,7 +3,7 @@ module Scream
   TOKEN_REGEXP = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)(.*)/
   EOF_OBJECT = :"#<eof-object>"
   QUOTES = { "'" => :quote, "`" => :quasiquote, ","  => :unquote, ",@" => :"unquote-splicing" }
-  TOKENS = { true: "#t", false: "#f", sl_comment: ";", rp: ")", lp: "(", str_delim: '"', str_delim_esc: '\"' }
+  TOKENS = { true: "true", false: "false", sl_comment: ";", rp: ")", lp: "(", str_delim: '"', str_delim_esc: '\"' }
 
   class Lexer
     def initialize port = ''

@@ -5,7 +5,7 @@ include Scream
 class TestLexer < Test::Unit::TestCase
 
   def test_types
-    ["#t", "#f"].each { |b| assert_equal [b], lex(b) }
+    ["true", "false"].each { |b| assert_equal [b], lex(b) }
     10.times do
       r1 = rand.to_s
       r2 = rand(500000000).to_s
@@ -105,8 +105,8 @@ class TestParser < Test::Unit::TestCase
 
   def test_primitives
 
-    assert_equal true,    read("#t")
-    assert_equal false,   read("#f")
+    assert_equal true,    read("true")
+    assert_equal false,   read("false")
     assert_equal 20,      read("20")
     assert_equal 1.32,    read("1.32")
     assert_equal :foo,    read("foo")
