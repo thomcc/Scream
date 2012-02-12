@@ -5,8 +5,7 @@ module Scream
   class Env
     attr_accessor :outer
     def initialize params=[], args=[], outer=nil
-      @outer = outer
-      @table = Hash.new UNDEFINED
+      @outer, @table = outer, Hash.new(UNDEFINED)
       bind params, args
     end
     
@@ -22,6 +21,7 @@ module Scream
       end
       v
     end
+    
     def define! var, val
       @table[var] = val
     end
