@@ -31,7 +31,6 @@ class TestLexer < Test::Unit::TestCase
     assert_equal Scream::EOF_OBJECT, l.tok!
     l.port = "()()"
     assert_equal '(', l.tok!
-
     assert_equal ')', l.tok!
     l.port = ")foo("
     assert_equal ')', l.tok!
@@ -97,21 +96,21 @@ class TestParser < Test::Unit::TestCase
     t1 = "(((((((()()))))())()(()))((((())()()()(((())))))))"
     r1 = [[[[[[[[],[]]]]],[]],[],[[]]],[[[[[]],[],[],[],[[[[]]]]]]]]
     assert_equal r1, read(t1)
-    assert_raise(Scream::SyntaxError, "all left parens") { read "(((" }
-    assert_raise(Scream::SyntaxError, "all right parens") { read ")))" }
-    assert_raise(Scream::SyntaxError, "left paren and empty list") { read "(()" }
-    assert_raise(Scream::SyntaxError, "right paren and empty list") { read ")()" }
+    assert_raise(Scream::SyntaxError, "all lparens")   { read "(((" }
+    assert_raise(Scream::SyntaxError, "all rparens")   { read ")))" }
+    assert_raise(Scream::SyntaxError, "lparen and ()") { read "(()" }
+    assert_raise(Scream::SyntaxError, "rparen and ()") { read ")()" }
   end
 
 
   def test_primitives
 
-    assert_equal true, read("#t")
-    assert_equal false, read("#f")
-    assert_equal 20, read("20")
-    assert_equal 1.32, read("1.32")
-    assert_equal :foo, read("foo")
-    assert_equal 'foo " ', read('"foo \" "')
+    assert_equal true,    read("#t")
+    assert_equal false,   read("#f")
+    assert_equal 20,      read("20")
+    assert_equal 1.32,    read("1.32")
+    assert_equal :foo,    read("foo")
+    assert_equal 'foo "', read('"foo \""')
   end
 
   def test_quotes
@@ -121,7 +120,8 @@ class TestParser < Test::Unit::TestCase
     assert_equal [:quasiquote, [:quasiquotedlist]], read("`(quasiquotedlist)")
     assert_equal [:"unquote-splicing", :unquotespliced], read(",@unquotespliced")
     t = "`(this ,is ,@(somewhat) of ',a more ,(complicated '(expression)))"
-    r = [:quasiquote, [:this, [:unquote, :is], [:"unquote-splicing", [:somewhat]], :of, [:quote, [:unquote, :a]], :more, [:unquote, [:complicated, [:quote, [:expression]]]]]]
+    r = [:quasiquote, [:this, [:unquote, :is], [:"unquote-splicing", [:somewhat]], :of, 
+        [:quote, [:unquote, :a]], :more, [:unquote, [:complicated, [:quote, [:expression]]]]]]
     assert_equal r, read(t)
   end
 
@@ -140,6 +140,24 @@ class TestParser < Test::Unit::TestCase
              [:"*", :n, [:factorial, [:"-", :n, 1]]]]], 
            [:printf, 'factorial of ~a is "~a"', :n, [:factorial, :n]]]
     assert_equal ary, read(str)
+  end
+
+
+end
+
+class TestWriter < Test::Unit::TestCase
+  include Writer
+
+  def test_basic
+    assert_equal "(foo bar baz)", stringify([:foo, :bar, :baz])
+    assert_equal "()", stringify([])
+    assert_equal "20", stringify(20)
+    assert_equal "(foo (bar) baz (((quux)) ()))", stringify([:foo, [:bar], :baz, [[[:quux]], []]])
+  end
+
+  def test_strings
+    assert_equal '"foo"', stringify("foo")
+    assert_equal '"foo \"bar\" baz"', stringify('foo "bar" baz')
   end
 
 

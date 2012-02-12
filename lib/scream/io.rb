@@ -3,20 +3,9 @@ module Scream
   TOKEN_REGEXP = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)(.*)/
   EOF_OBJECT = :"#<eof-object>"
   QUOTES = { "'" => :quote, "`" => :quasiquote, ","  => :unquote, ",@" => :"unquote-splicing" }
-  TOKENS = {
-    true: "#t",
-    false: "#f",
-    sl_comment: ";",
-    rp: ")",
-    lp: "(",
-    str_delim: '"',
-    str_delim_esc: '\"'
-  }
-
-
+  TOKENS = { true: "#t", false: "#f", sl_comment: ";", rp: ")", lp: "(", str_delim: '"', str_delim_esc: '\"' }
 
   class Lexer
-
     def initialize port = ''
       self.port = port
     end
@@ -31,13 +20,11 @@ module Scream
     end
 
     def tok!
-      
       begin
         @line = @port.gets if @line.empty?
         return EOF_OBJECT if @line.nil?
         token, @line = match_next @line
       end until is_okay? token
-
       token
     end
 
@@ -67,18 +54,13 @@ module Scream
     end
 
     def atom token
-      if token == TOKENS[:true]      
-        true
-      elsif token == TOKENS[:false]  
-        false
+      if token == TOKENS[:true] then true    
+      elsif token == TOKENS[:false] then false
       elsif token[0] == TOKENS[:str_delim]
         token[1..-2].gsub TOKENS[:str_delim_esc], TOKENS[:str_delim]
-      else 
-        Integer token rescue Float token rescue token.to_sym
+      else Integer token rescue Float token rescue token.to_sym
       end
     end
-    
-    private
     
     def parsify lexer, token
       if token == TOKENS[:lp]
@@ -87,17 +69,25 @@ module Scream
           l << parsify(lexer, token)
         end
         l
-      elsif token == TOKENS[:rp]
-        raise Scream::SyntaxError, "unexpected rparen"
-      elsif QUOTES[token]
-        [QUOTES[token], parse(lexer)]
-      elsif token == EOF_OBJECT
-        raise Scream::SyntaxError, "unexpected EOF"
-      else
-        atom token
+      elsif token == TOKENS[:rp] then raise Scream::SyntaxError, "unexpected rparen"
+      elsif token == EOF_OBJECT  then raise Scream::SyntaxError, "unexpected EOF"
+      elsif QUOTES[token] then [QUOTES[token], parse(lexer)]
+      else atom token
       end
     end
 
+  end
+
+  module Writer
+    def stringify x
+      case x
+      when true then "#t"
+      when false then "#f"
+      when String then x.inspect
+      when Array then "(" << x.map {|i| stringify i }.join(' ') << ")"
+      else x.to_s
+      end
+    end
   end
 
 end
