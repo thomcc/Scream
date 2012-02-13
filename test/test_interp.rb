@@ -39,6 +39,11 @@ class TestInterpreter < Test::Unit::TestCase
     assert_equal 20, i.eval([:/, 400, 10, 2])
     assert_equal 15, i.eval([:car, [:quote, [15, 16, 17, 18]]])
     assert_equal 16, i.eval([:car, [:cdr, [:quote, [15, 16, 17, 18]]]])
+    assert_equal false, i.eval([:==, 3, 2])
+    assert_equal true, i.eval([:==, 3, 3])
+    assert_equal false, i.eval([:not, true])
+    assert_equal true, i.eval([:not, false])
+    assert_equal [40, 50], i.eval([:cons, 40, [:quote, [50]]])
   end
   
   
