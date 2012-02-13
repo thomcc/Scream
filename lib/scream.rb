@@ -7,7 +7,7 @@ module Scream
 
   require ROOT_PATH + '/io'
   require ROOT_PATH + '/env'
-
+  require ROOT_PATH + '/interpreter'
   class ScreamError < StandardError; end
   class TypeError < ScreamError; end
   class SyntaxError < ScreamError; end

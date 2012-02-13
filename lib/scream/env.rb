@@ -56,10 +56,10 @@ module Scream
     end
   end
 
-
-
-
-  
-
-
+  class Procedure
+    attr_accessor :args, :body, :env
+    def initialize args, body, env
+      @args, @body, @env = args, body, env
+    end
+  end
 end
