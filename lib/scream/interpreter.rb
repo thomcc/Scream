@@ -8,17 +8,19 @@ class Array # shorthand for array access
 end
 module Scream
   FORMS = {assign: :set, define: :define, lambda: :lambda, sequence: :begin, :if => :if, quote: :quote }
-  BUILTINS = {
-    :+    => lambda { |*as| as.inject :+ },
-    :-    => lambda { |a,*as| a - as.inject(:+) },
-    :*    => lambda { |*as| as.inject :* },
-    :/    => lambda { |a,*as| a / as.inject(:*)},
 
-    :car  => lambda { |(fst,*_)| fst },
-    :cdr  => lambda { |(_,*rst)| rst },
-    :cons => lambda { |fst,rst| [fst, *rst] }
-  }
-  class Interpreter
+  class Interpreter 
+    BUILTINS = {
+      :+    => lambda { |*as| as.inject :+ },
+      :-    => lambda { |a,*as| a - as.inject(:+) },
+      :*    => lambda { |*as| as.inject :* },
+      :/    => lambda { |a,*as| a / as.inject(:*) },
+      :not  => lambda { |x| not x },
+      :==   => lambda { |a,b| a == b },
+      :car  => lambda { |(fst,*_)| fst },
+      :cdr  => lambda { |(_,*rst)| rst },
+      :cons => lambda { |fst,rst| [fst, *rst] }
+    }
     def initialize os=nil
       @out = os || $stdout
       @top_level = create_top_level
@@ -47,7 +49,7 @@ module Scream
     end
     
     def eval_if((_, pred, cons, alt), env)
-      eval(pred, env) == true ? eval(cons, env) : eval(alt, env)
+      eval(pred, env) == true ? cons : alt
     end
 
     def eval exp, env = @top_level
@@ -63,12 +65,12 @@ module Scream
         when FORMS[:sequence] then exp = exp[1..-1].map {|e| eval e, env }[-1]
         else 
           exps = exp.map { |e| eval e, env }
-#          puts exps.inspect
+#         puts exps.inspect
           p = exps.shift
           if p.is_a? Procedure 
             exp, env = [:begin, *p.body], Env.new(p.args, exps, env)
           else 
-            exp = p.call(*exps)
+            return p.call(*exps)
           end
         end
       end
