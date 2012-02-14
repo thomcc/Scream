@@ -1,6 +1,5 @@
 module Scream
   UNDEFINED = :"#<undefined>"
-  VOID = :"#<void>"
   
   class Env
     attr_accessor :outer
@@ -45,6 +44,26 @@ module Scream
       else
         true
       end
+    end
+    
+    def pretty n=0
+      s = ["### Env frame #{n}:"]
+      @table.each do |k, v|
+        kstr = k
+        case v
+        when Proc then vstr = ("#<builtin-procedure:'#{k}'>")
+        when Procedure then vstr = "#<closure:'#{k}'>"
+        else vstr = Writer.stringify v
+        end
+        s.push "#{kstr}  => #{vstr}"
+      end
+
+      if @outer.nil?
+        s[0] += "(top level)"
+      else
+        s.push *@outer.pretty(n+1) unless @outer.nil?
+      end
+      s
     end
 
     def []=(var, val)

@@ -43,17 +43,8 @@ module Scream
   end
 
   module Parser
-
-    def parse lexer
-      tok = lexer.tok!
-      tok == EOF_OBJECT ? tok : parsify(lexer, tok)
-    end
-
-    def read io
-      parse Lexer.new(io)
-    end
-
-    def atom token
+    private
+    def self.atom token
       if token == TOKENS[:true] then true    
       elsif token == TOKENS[:false] then false
       elsif token[0] == TOKENS[:str_delim]
@@ -61,8 +52,7 @@ module Scream
       else Integer token rescue Float token rescue token.to_sym
       end
     end
-    
-    def parsify lexer, token
+    def self.parsify lexer, token
       if token == TOKENS[:lp]
         l = []
         until (token = lexer.tok!) == TOKENS[:rp]
@@ -76,10 +66,21 @@ module Scream
       end
     end
 
-  end
+    public
+    
+    def self.parse lexer
+      tok = lexer.tok!
+      tok == EOF_OBJECT ? tok : parsify(lexer, tok)
+    end
 
+    def self.read io
+      parse Lexer.new(io)
+    end
+    
+  end
+  
   module Writer
-    def stringify x
+    def self.stringify x
       case x
       when true then "#t"
       when false then "#f"
