@@ -1,18 +1,31 @@
+require 'rational'
 module Scream
   FORMS = {assign: :set, define: :define, lambda: :lambda, sequence: :begin, :if => :if, quote: :quote }
   VOID = :"#<void>"
   class Interpreter 
     BUILTINS = {
-      :+     => lambda { |*as| as.inject :+ },
-      :-     => lambda { |a,*as| a - as.inject(:+) },
-      :*     => lambda { |*as| as.inject :* },
-      :/     => lambda { |a,*as| a / as.inject(:*) },
-      :not   => lambda { |x| not x },
-      :"="   => lambda { |a,b| a == b },
-      :null? => lambda { |a| a.nil? or a == [] },
-      :car   => lambda { |(fst,*_)| fst },
-      :cdr   => lambda { |(_,*rst)| rst },
-      :cons  => lambda { |fst,rst| [fst, *rst] }
+      :+        => lambda { |*as| as.inject :+ },
+      :-        => lambda { |a,*as| a - as.inject(:+) },
+      :*        => lambda { |*as| as.inject :* },
+      :/        => lambda { |a,*as| Rational a, as.inject(:*) },
+      :not      => lambda { |x| not x },
+      :"="      => lambda { |a,b| a == b },
+      :modulo   => lambda { |a,b| a % b },
+      :quotient => lambda { |a,b| a.to_i / b.to_i },
+      :expt     => lambda { |a,b| a ** b },
+      # data structures
+      :car      => lambda { |(fst,*_)| fst },
+      :cdr      => lambda { |(_,*rst)| rst },
+      :cons     => lambda { |fst,rst| [fst, *rst] },
+      :null?    => lambda { |a| a.nil? or a == [] },
+      :hash     => lambda { || {} },
+      :get      => lambda { |h,k| h[k] },
+      :put      => lambda { |h,k,v| h[k] = v },
+      # ffi
+      :new      => lambda { |c| Object.const_get c },
+      :"."      => lambda { |c,*as| c.send *as },
+      :reval    => lambda { |s| Kernel.eval s }
+
     }
     def initialize os=nil
       @out = os || $stdout
